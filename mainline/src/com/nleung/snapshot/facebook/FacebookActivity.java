@@ -5,15 +5,18 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Iterator;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.facebook.android.AsyncFacebookRunner;
@@ -23,6 +26,7 @@ import com.facebook.android.Facebook;
 import com.facebook.android.Facebook.DialogListener;
 import com.facebook.android.FacebookError;
 import com.nleung.snapshot.R;
+import com.nleung.snapshot.Utils;
 
 public class FacebookActivity extends Activity
 {
@@ -73,6 +77,7 @@ public class FacebookActivity extends Activity
         }
         
         getUserInfo();
+        getUserPicture();
     }
     
     public void onFacebookLoginClick(View view)
@@ -210,6 +215,75 @@ public class FacebookActivity extends Activity
                     {
                         TextView userInfo = (TextView) findViewById(R.id.facebook_user_info);
                         userInfo.setText(builder.toString());
+                    }
+                });
+            }
+        });
+    }
+    
+    private void getUserPicture()
+    {
+        this.runner.request("me/photos", new RequestListener()
+        {
+            
+            @Override
+            public void onMalformedURLException(MalformedURLException e, Object state)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+            
+            @Override
+            public void onIOException(IOException e, Object state)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+            
+            @Override
+            public void onFileNotFoundException(FileNotFoundException e, Object state)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+            
+            @Override
+            public void onFacebookError(FacebookError e, Object state)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+            
+            @Override
+            public void onComplete(String response, Object state)
+            {
+                Log.d(getLocalClassName(), "response is: " + response);
+                
+                Bitmap bitmap = null;
+                try
+                {
+                    JSONObject responseJson = new JSONObject(response);
+                    JSONArray data = responseJson.getJSONArray("data");
+                    if (data.length() > 0)
+                    {
+                        JSONObject picture = data.getJSONObject(0);
+                        String pictureUrl = picture.getString("picture");
+                        bitmap = Utils.downloadImage(pictureUrl);
+                    }
+                }
+                catch (JSONException e)
+                {
+                    Log.e(getLocalClassName(), e.toString());
+                }
+                
+                final Bitmap copy = bitmap;
+                FacebookActivity.this.runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        ImageView userPicture = (ImageView) findViewById(R.id.facebook_picture);
+                        userPicture.setImageBitmap(copy);
                     }
                 });
             }
