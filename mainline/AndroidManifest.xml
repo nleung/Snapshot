@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         
-        <activity android:name="com.nleung.snapshot.facebook.FacebookSSOActivity"></activity>
+        <activity android:name=".facebook.FacebookActivity"></activity>
     </application>
 
 </manifest>
